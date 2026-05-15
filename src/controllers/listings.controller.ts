@@ -1,100 +1,120 @@
-import { Request, Response } from "express";
-import { listings, Listing } from "../models/listing.model";
+import { Response } from "express";
+import { AuthRequest } from "../middlewares/auth.middleware";
+import prisma from "../config/prisma";
+import { ListingType } from "@prisma/client";
 
-export const getAllListings = (req: Request, res: Response) => {
-  res.json(listings);
+export const getAllListings = async (req: AuthRequest, res: Response) => {
+  try {
+    const { location, type, maxPrice, page, limit, sortBy, order } = req.query;
+
+    const pageNum = parseInt(page as string) || 1;
+    const limitNum = parseInt(limit as string) || 10;
+    const skip = (pageNum - 1) * limitNum;
+
+    const listings = await prisma.listing.findMany({
+      where: {
+        ...(location && {
+          location: { contains: location as string, mode: "insensitive" }
+        }),
+        ...(type && { type: type as ListingType }),
+        ...(maxPrice && { pricePerNight: { lte: Number(maxPrice) } })
+      },
+      include: {
+        host: { select: { name: true, avatar: true } },
+        photos: true
+      },
+      skip,
+      take: limitNum,
+      orderBy: sortBy ? { [sortBy as string]: order || "asc" } : undefined
+    });
+
+    res.status(200).json(listings);
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" });
+  }
 };
 
-export const getListingById = (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-
-  const listing = listings.find((l) => l.id === id);
-
-  if (!listing) {
-    return res.status(404).json({
-      message: "Listing not found"
+export const getListingById = async (req: AuthRequest, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const listing = await prisma.listing.findUnique({
+      where: { id },
+      include: { host: true, bookings: true, photos: true }
     });
+    if (!listing) return res.status(404).json({ message: "Listing not found" });
+    res.status(200).json(listing);
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" });
   }
-
-  res.json(listing);
 };
 
-export const createListing = (req: Request, res: Response) => {
-  const {
-    title,
-    description,
-    location,
-    pricePerNight,
-    guests,
-    type,
-    amenities,
-    rating,
-    host
-  } = req.body;
+export const createListing = async (req: AuthRequest, res: Response) => {
+  try {
+    const hostId = req.userId!;
 
-  if (
-    !title ||
-    !description ||
-    !location ||
-    !pricePerNight ||
-    !guests ||
-    !type ||
-    !amenities ||
-    !host
-  ) {
-    return res.status(400).json({
-      message: "Missing required fields"
+    const { title, description, location, pricePerNight, guests, type, amenities } = req.body;
+
+    if (!title || !description || !location || !pricePerNight || !guests || !type) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const validTypes: ListingType[] = ["APARTMENT", "HOUSE", "VILLA", "CABIN"];
+    if (!validTypes.includes(type)) {
+      return res.status(400).json({ message: "Invalid listing type. Must be APARTMENT, HOUSE, VILLA, or CABIN" });
+    }
+
+    const listing = await prisma.listing.create({
+      data: {
+        title,
+        description,
+        location,
+        pricePerNight: Number(pricePerNight),
+        guests: Number(guests),
+        type: type as ListingType,
+        amenities: amenities ?? [],
+        hostId
+      }
     });
+
+    res.status(201).json(listing);
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" });
   }
-
-  const newListing: Listing = {
-    id: listings.length + 1,
-    title,
-    description,
-    location,
-    pricePerNight,
-    guests,
-    type,
-    amenities,
-    rating,
-    host
-  };
-
-  listings.push(newListing);
-
-  res.status(201).json(newListing);
 };
 
-export const updateListing = (req: Request, res: Response) => {
-  const id = Number(req.params.id);
+export const updateListing = async (req: AuthRequest, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const existing = await prisma.listing.findFirst({ where: { id } });
+    if (!existing) return res.status(404).json({ message: "Listing not found" });
 
-  const listing = listings.find((l) => l.id === id);
+    if (existing.hostId !== req.userId && req.role !== "ADMIN") {
+      return res.status(403).json({ message: "You can only edit your own listings" });
+    }
 
-  if (!listing) {
-    return res.status(404).json({
-      message: "Listing not found"
+    const listing = await prisma.listing.update({
+      where: { id },
+      data: req.body
     });
+    res.status(200).json(listing);
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" });
   }
-
-  Object.assign(listing, req.body);
-
-  res.json(listing);
 };
 
-export const deleteListing = (req: Request, res: Response) => {
-  const id = Number(req.params.id);
+export const deleteListing = async (req: AuthRequest, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const existing = await prisma.listing.findFirst({ where: { id } });
+    if (!existing) return res.status(404).json({ message: "Listing not found" });
 
-  const index = listings.findIndex((l) => l.id === id);
+    if (existing.hostId !== req.userId && req.role !== "ADMIN") {
+      return res.status(403).json({ message: "You can only delete your own listings" });
+    }
 
-  if (index === -1) {
-    return res.status(404).json({
-      message: "Listing not found"
-    });
+    await prisma.listing.delete({ where: { id } });
+    res.status(200).json({ message: "Listing deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" });
   }
-
-  listings.splice(index, 1);
-
-  res.json({
-    message: "Listing deleted successfully"
-  });
 };

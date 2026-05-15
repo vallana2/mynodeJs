@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  HOST
+  GUEST
+}
+
+enum ListingType {
+  APARTMENT
+  HOUSE
+  VILLA
+  CABIN
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+model User {
+  id               Int       @id @default(autoincrement())
+  name             String
+  email            String    @unique
+  username         String    @unique
+  phone            String
+  role             Role      @default(GUEST)
+  avatar           String?
+  avatarPublicId   String?   // Cloudinary public_id — needed to delete old avatar before uploading new one
+  bio              String?
+  password         String
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  listings Listing[]
+  bookings Booking[]
+}
+
+model Listing {
+  id            Int         @id @default(autoincrement())
+  title         String
+  description   String
+  location      String
+  pricePerNight Float
+  guests        Int
+  type          ListingType
+  amenities     String[]
+  rating        Float?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  hostId   Int
+  host     User           @relation(fields: [hostId], references: [id])
+  bookings Booking[]
+  photos   ListingPhoto[]
+
+  @@index([location])
+  @@index([pricePerNight])
+}
+
+model ListingPhoto {
+  id        Int      @id @default(autoincrement())
+  url       String   // Cloudinary secure_url — for displaying
+  publicId  String   // Cloudinary public_id — for deleting
+  createdAt DateTime @default(now())
+
+  listingId Int
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+}
+
+model Booking {
+  id         Int           @id @default(autoincrement())
+  checkIn    DateTime
+  checkOut   DateTime
+  totalPrice Float
+  status     BookingStatus @default(PENDING)
+  createdAt  DateTime      @default(now())
+
+  guestId   Int
+  guest     User    @relation(fields: [guestId], references: [id])
+  listingId Int
+  listing   Listing @relation(fields: [listingId], references: [id])
+}
