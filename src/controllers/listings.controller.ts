@@ -34,6 +34,27 @@ export const getAllListings = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const searchListings = async (req: AuthRequest, res: Response) => {
+  try {
+    const { location, type, minPrice, maxPrice, guests, page, limit } = req.query;
+    const pageNum = parseInt(page as string) || 1;
+    const limitNum = parseInt(limit as string) || 10;
+    const skip = (pageNum - 1) * limitNum;
+    const where: any = {};
+    if (location) where.location = { contains: location as string, mode: "insensitive" };
+    if (type) where.type = type;
+    if (minPrice && maxPrice) where.pricePerNight = { gte: Number(minPrice), lte: Number(maxPrice) };
+    else if (minPrice) where.pricePerNight = { gte: Number(minPrice) };
+    else if (maxPrice) where.pricePerNight = { lte: Number(maxPrice) };
+    if (guests) where.guests = { gte: Number(guests) };
+    const [listings, total] = await Promise.all([
+      prisma.listing.findMany({ where, include: { host: { select: { id: true, name: true, email: true } }, photos: true }, skip, take: limitNum, orderBy: { createdAt: "desc" } }),
+      prisma.listing.count({ where })
+    ]);
+    res.status(200).json({ data: listings, meta: { total, page: pageNum, limit: limitNum, totalPages: Math.ceil(total / limitNum) } });
+  } catch (error) { console.log(error); res.status(500).json({ message: "Something went wrong" }); }
+};
+
 export const getListingById = async (req: AuthRequest, res: Response) => {
   try {
     const id = Number(req.params.id);
@@ -118,3 +139,4 @@ export const deleteListing = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: "Something went wrong" });
   }
 };
+

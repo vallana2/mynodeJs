@@ -1,3 +1,4 @@
+import { setupSwagger } from "./config/swagger";
 import "dotenv/config";
 
 import express, { Request, Response, NextFunction } from "express";
@@ -13,7 +14,7 @@ import { connectDB } from "./config/prisma";
 const app = express();
 
 app.use(express.json());
-
+setupSwagger(app);
 app.use("/auth", authRoutes);
 app.use("/users", usersRoutes);
 app.use("/listings", listingsRoutes);
