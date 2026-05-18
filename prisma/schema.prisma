@@ -27,14 +27,14 @@ enum BookingStatus {
 }
 
 model User {
-  id               Int       @id @default(autoincrement())
+  id               String    @id @default(uuid())
   name             String
   email            String    @unique
   username         String    @unique
   phone            String
   role             Role      @default(GUEST)
   avatar           String?
-  avatarPublicId   String?   // Cloudinary public_id — needed to delete old avatar before uploading new one
+  avatarPublicId   String?
   bio              String?
   password         String
   resetToken       String?
@@ -44,10 +44,14 @@ model User {
 
   listings Listing[]
   bookings Booking[]
+  reviews  Review[]
+
+  @@index([role])
+  @@index([name])
 }
 
 model Listing {
-  id            Int         @id @default(autoincrement())
+  id            String      @id @default(uuid())
   title         String
   description   String
   location      String
@@ -59,35 +63,58 @@ model Listing {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
-  hostId   Int
-  host     User           @relation(fields: [hostId], references: [id])
+  hostId String
+  host   User @relation(fields: [hostId], references: [id])
+
   bookings Booking[]
   photos   ListingPhoto[]
+  reviews  Review[]
 
   @@index([location])
   @@index([pricePerNight])
+  @@index([type])
+  @@index([hostId])
 }
 
 model ListingPhoto {
-  id        Int      @id @default(autoincrement())
-  url       String   // Cloudinary secure_url — for displaying
-  publicId  String   // Cloudinary public_id — for deleting
+  id        String   @id @default(uuid())
+  url       String
+  publicId  String
   createdAt DateTime @default(now())
 
-  listingId Int
+  listingId String
   listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 }
 
 model Booking {
-  id         Int           @id @default(autoincrement())
+  id         String        @id @default(uuid())
   checkIn    DateTime
   checkOut   DateTime
   totalPrice Float
   status     BookingStatus @default(PENDING)
   createdAt  DateTime      @default(now())
 
-  guestId   Int
+  guestId   String
   guest     User    @relation(fields: [guestId], references: [id])
-  listingId Int
+  listingId String
   listing   Listing @relation(fields: [listingId], references: [id])
+
+  @@index([guestId])
+  @@index([listingId])
+  @@index([status])
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  rating    Int
+  comment   String
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id])
+
+  @@index([userId])
+  @@index([listingId])
 }

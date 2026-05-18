@@ -20,7 +20,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
 
 export const getUserById = async (req: Request, res: Response) => {
   try {
-    const id = Number(req.params.id);
+    const id = req.params.id as string;
     const user = await prisma.user.findUnique({
       where: { id },
       include: { listings: true, bookings: true }
@@ -60,7 +60,7 @@ export const createUser = async (req: Request, res: Response) => {
 
 export const updateUser = async (req: Request, res: Response) => {
   try {
-    const id = Number(req.params.id);
+    const id = req.params.id as string;
     const existing = await prisma.user.findFirst({ where: { id } });
     if (!existing) return res.status(404).json({ message: "User not found" });
 
@@ -76,7 +76,7 @@ export const updateUser = async (req: Request, res: Response) => {
 
 export const deleteUser = async (req: Request, res: Response) => {
   try {
-    const id = Number(req.params.id);
+    const id = req.params.id as string;
     const existing = await prisma.user.findFirst({ where: { id } });
     if (!existing) return res.status(404).json({ message: "User not found" });
 
@@ -89,7 +89,7 @@ export const deleteUser = async (req: Request, res: Response) => {
 
 export const getUserListings = async (req: Request, res: Response) => {
   try {
-    const id = Number(req.params.id);
+    const id = req.params.id as string;
     const user = await prisma.user.findFirst({ where: { id } });
     if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -102,7 +102,7 @@ export const getUserListings = async (req: Request, res: Response) => {
 
 export const getUserBookings = async (req: Request, res: Response) => {
   try {
-    const id = Number(req.params.id);
+    const id = req.params.id as string;
     const user = await prisma.user.findFirst({ where: { id } });
     if (!user) return res.status(404).json({ message: "User not found" });
 

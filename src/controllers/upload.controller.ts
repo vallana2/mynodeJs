@@ -9,7 +9,7 @@ const MAX_PHOTOS = 5;
 
 export const uploadAvatar = async (req: AuthRequest, res: Response) => {
   try {
-    const id = Number(req.params.id);
+    const id = req.params.id as string;
 
     if (req.userId !== id) {
       return res.status(403).json({ message: "You can only update your own avatar" });
@@ -49,7 +49,7 @@ export const uploadAvatar = async (req: AuthRequest, res: Response) => {
 
 export const deleteAvatar = async (req: AuthRequest, res: Response) => {
   try {
-    const id = Number(req.params.id);
+    const id = req.params.id as string;
 
     if (req.userId !== id) {
       return res.status(403).json({ message: "You can only update your own avatar" });
@@ -80,7 +80,7 @@ export const deleteAvatar = async (req: AuthRequest, res: Response) => {
 
 export const uploadListingPhotos = async (req: AuthRequest, res: Response) => {
   try {
-    const id = Number(req.params.id);
+    const id = req.params.id as string;
 
     const listing = await prisma.listing.findUnique({ where: { id } });
     if (!listing) return res.status(404).json({ message: "Listing not found" });
@@ -141,8 +141,8 @@ export const uploadListingPhotos = async (req: AuthRequest, res: Response) => {
 
 export const deleteListingPhoto = async (req: AuthRequest, res: Response) => {
   try {
-    const id = Number(req.params.id);
-    const photoId = Number(req.params.photoId);
+    const id = req.params.id as string;
+    const photoId = req.params.photoId as string;
 
     const listing = await prisma.listing.findUnique({ where: { id } });
     if (!listing) return res.status(404).json({ message: "Listing not found" });
@@ -168,3 +168,4 @@ export const deleteListingPhoto = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: "Something went wrong" });
   }
 };
+

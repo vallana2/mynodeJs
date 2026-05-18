@@ -57,7 +57,7 @@ export const searchListings = async (req: AuthRequest, res: Response) => {
 
 export const getListingById = async (req: AuthRequest, res: Response) => {
   try {
-    const id = Number(req.params.id);
+    const id = req.params.id as string;
     const listing = await prisma.listing.findUnique({
       where: { id },
       include: { host: true, bookings: true, photos: true }
@@ -105,7 +105,7 @@ export const createListing = async (req: AuthRequest, res: Response) => {
 
 export const updateListing = async (req: AuthRequest, res: Response) => {
   try {
-    const id = Number(req.params.id);
+    const id = req.params.id as string;
     const existing = await prisma.listing.findFirst({ where: { id } });
     if (!existing) return res.status(404).json({ message: "Listing not found" });
 
@@ -125,7 +125,7 @@ export const updateListing = async (req: AuthRequest, res: Response) => {
 
 export const deleteListing = async (req: AuthRequest, res: Response) => {
   try {
-    const id = Number(req.params.id);
+    const id = req.params.id as string;
     const existing = await prisma.listing.findFirst({ where: { id } });
     if (!existing) return res.status(404).json({ message: "Listing not found" });
 
@@ -139,4 +139,5 @@ export const deleteListing = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: "Something went wrong" });
   }
 };
+
 

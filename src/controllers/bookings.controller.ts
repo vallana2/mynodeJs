@@ -26,7 +26,7 @@ export const getAllBookings = async (req: AuthRequest, res: Response) => {
 
 export const getBookingById = async (req: AuthRequest, res: Response) => {
   try {
-    const id = Number(req.params.id);
+    const id = req.params.id as string;
     const booking = await prisma.booking.findUnique({
       where: { id },
       include: { listing: true, guest: true }
@@ -122,7 +122,7 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
 
 export const deleteBooking = async (req: AuthRequest, res: Response) => {
   try {
-    const id = Number(req.params.id);
+    const id = req.params.id as string;
 
     const booking = await prisma.booking.findUnique({
       where: { id },
@@ -171,7 +171,7 @@ export const deleteBooking = async (req: AuthRequest, res: Response) => {
 
 export const updateBookingStatus = async (req: AuthRequest, res: Response) => {
   try {
-    const id = Number(req.params.id);
+    const id = req.params.id as string;
     const { status } = req.body;
 
     const validStatuses = ["PENDING", "CONFIRMED", "CANCELLED"];
@@ -193,3 +193,4 @@ export const updateBookingStatus = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: "Something went wrong" });
   }
 };
+

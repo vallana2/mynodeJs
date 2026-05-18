@@ -5,7 +5,7 @@ import { getCache, setCache, clearCacheByPrefix } from "../config/cache";
 
 export const getListingReviews = async (req: AuthRequest, res: Response) => {
   try {
-    const listingId = Number(req.params.id);
+    const listingId = req.params.id as string;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
@@ -47,7 +47,7 @@ export const getListingReviews = async (req: AuthRequest, res: Response) => {
 
 export const createReview = async (req: AuthRequest, res: Response) => {
   try {
-    const listingId = Number(req.params.id);
+    const listingId = req.params.id as string;
     const { userId, rating, comment } = req.body;
 
     if (!userId || !rating || !comment) {
@@ -65,7 +65,7 @@ export const createReview = async (req: AuthRequest, res: Response) => {
       data: {
         rating: Number(rating),
         comment,
-        userId: Number(userId),
+        userId: String(userId),
         listingId
       },
       include: {
@@ -85,7 +85,7 @@ export const createReview = async (req: AuthRequest, res: Response) => {
 
 export const deleteReview = async (req: AuthRequest, res: Response) => {
   try {
-    const id = Number(req.params.id);
+    const id = req.params.id as string;
 
     const review = await prisma.review.findUnique({ where: { id } });
     if (!review) return res.status(404).json({ message: "Review not found" });
@@ -101,3 +101,6 @@ export const deleteReview = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: "Something went wrong" });
   }
 };
+
+
+
