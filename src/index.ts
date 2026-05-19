@@ -11,6 +11,8 @@ import uploadRoutes from "./routes/upload.routes";
 
 const app = express();
 
+app.set("trust proxy", 1); // required for rate limiter behind Render/proxy
+
 app.use(process.env["NODE_ENV"] === "production" ? morgan("combined") : morgan("dev"));
 app.use(compression());
 app.use(express.json());
