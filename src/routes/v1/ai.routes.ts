@@ -149,3 +149,4 @@ router.post("/recommend", authenticate, recommend);
 router.get("/listings/:id/review-summary", reviewSummary);
 
 export default router;
+

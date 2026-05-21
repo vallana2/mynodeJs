@@ -12,7 +12,6 @@ import { getListingStats } from "../../controllers/stats.controller";
 
 const router = Router();
 
-// stats and search MUST come before /:id
 router.get("/stats", getListingStats);
 router.get("/search", searchListings);
 router.get("/", getAllListings);
@@ -22,3 +21,4 @@ router.put("/:id", authenticate, updateListing);
 router.delete("/:id", authenticate, deleteListing);
 
 export default router;
+
