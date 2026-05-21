@@ -18,6 +18,38 @@ const options: swaggerJsdoc.Options = {
           scheme: "bearer",
           bearerFormat: "JWT"
         }
+      },
+      schemas: {
+        RegisterInput: {
+          type: "object",
+          required: ["name", "email", "username", "phone", "password"],
+          properties: {
+            name:     { type: "string", example: "Alice Johnson" },
+            email:    { type: "string", example: "alice@example.com" },
+            username: { type: "string", example: "alicejohnson" },
+            phone:    { type: "string", example: "1234567890" },
+            password: { type: "string", example: "password123", minLength: 8 },
+            role:     { type: "string", enum: ["GUEST", "HOST"], example: "GUEST" },
+            bio:      { type: "string", example: "Love traveling!" }
+          }
+        },
+        LoginInput: {
+          type: "object",
+          required: ["email", "password"],
+          properties: {
+            email:    { type: "string", example: "alice@example.com" },
+            password: { type: "string", example: "password123" }
+          }
+        },
+        CreateBookingInput: {
+          type: "object",
+          required: ["listingId", "checkIn", "checkOut"],
+          properties: {
+            listingId: { type: "string", example: "a3f8c2d1-4b5e-4f6a-8c9d-1e2f3a4b5c6d" },
+            checkIn:   { type: "string", format: "date", example: "2026-06-01" },
+            checkOut:  { type: "string", format: "date", example: "2026-06-07" }
+          }
+        }
       }
     }
   },
@@ -34,4 +66,3 @@ export const setupSwagger = (app: Express): void => {
   });
   console.log("Swagger docs available at http://localhost:3000/api-docs");
 };
-
