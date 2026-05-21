@@ -34,3 +34,4 @@ export const setupSwagger = (app: Express): void => {
   });
   console.log("Swagger docs available at http://localhost:3000/api-docs");
 };
+
