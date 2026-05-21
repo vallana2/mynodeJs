@@ -10,7 +10,7 @@ const options: swaggerJsdoc.Options = {
       version: "1.0.0",
       description: "A RESTful API for an Airbnb-like platform. Supports user authentication, listings, bookings, reviews, and image uploads."
     },
-    servers: [{ url: process.env["API_URL"] || "http://localhost:3000" }],
+    servers: [{ url: (process.env["API_URL"] || "http://localhost:3000") + "/api/v1" }],
     components: {
       securitySchemes: {
         bearerAuth: {
@@ -21,7 +21,7 @@ const options: swaggerJsdoc.Options = {
       }
     }
   },
-  apis: ["./src/routes/*.ts", "./src/routes/v1/*.ts"]
+  apis: ["./src/routes/v1/*.ts"]
 };
 
 const spec = swaggerJsdoc(options);
