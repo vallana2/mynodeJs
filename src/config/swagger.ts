@@ -18,6 +18,51 @@ const options: swaggerJsdoc.Options = {
           scheme: "bearer",
           bearerFormat: "JWT"
         }
+      },
+      schemas: {
+        RegisterInput: {
+          type: "object",
+          required: ["name", "email", "username", "phone", "password"],
+          properties: {
+            name:     { type: "string", example: "Alice Johnson" },
+            email:    { type: "string", example: "alice@example.com" },
+            username: { type: "string", example: "alicejohnson" },
+            phone:    { type: "string", example: "1234567890" },
+            password: { type: "string", example: "password123", minLength: 8 },
+            role:     { type: "string", enum: ["GUEST", "HOST"], example: "GUEST" },
+            bio:      { type: "string", example: "Love traveling!" }
+          }
+        },
+        LoginInput: {
+          type: "object",
+          required: ["email", "password"],
+          properties: {
+            email:    { type: "string", example: "alice@example.com" },
+            password: { type: "string", example: "password123" }
+          }
+        },
+        CreateBookingInput: {
+          type: "object",
+          required: ["listingId", "checkIn", "checkOut"],
+          properties: {
+            listingId: { type: "string", example: "paste-real-uuid-here" },
+            checkIn:   { type: "string", format: "date", example: "2026-06-01" },
+            checkOut:  { type: "string", format: "date", example: "2026-06-07" }
+          }
+        },
+        CreateListingInput: {
+          type: "object",
+          required: ["title", "description", "location", "pricePerNight", "guests", "type"],
+          properties: {
+            title:         { type: "string", example: "Cozy Apartment in Kigali" },
+            description:   { type: "string", example: "A beautiful apartment in the heart of Kigali" },
+            location:      { type: "string", example: "Kigali, Rwanda" },
+            pricePerNight: { type: "number", example: 80 },
+            guests:        { type: "integer", example: 2 },
+            type:          { type: "string", enum: ["APARTMENT", "HOUSE", "VILLA", "CABIN"], example: "APARTMENT" },
+            amenities:     { type: "array", items: { type: "string" }, example: ["wifi", "kitchen", "parking"] }
+          }
+        }
       }
     }
   },
@@ -34,4 +79,3 @@ export const setupSwagger = (app: Express): void => {
   });
   console.log("Swagger docs available at http://localhost:3000/api-docs");
 };
-
