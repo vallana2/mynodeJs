@@ -8,10 +8,9 @@ const options: swaggerJsdoc.Options = {
     info: {
       title: "Airbnb API",
       version: "1.0.0",
-      description:
-        "A RESTful API for an Airbnb-like platform. Supports user authentication, listings, bookings, reviews, and image uploads."
+      description: "A RESTful API for an Airbnb-like platform. Supports user authentication, listings, bookings, reviews, and image uploads."
     },
-    servers: [{ url: "http://localhost:3000" }],
+    servers: [{ url: process.env["API_URL"] || "http://localhost:3000" }],
     components: {
       securitySchemes: {
         bearerAuth: {
@@ -22,7 +21,7 @@ const options: swaggerJsdoc.Options = {
       }
     }
   },
-  apis: ["./src/routes/*.ts"]
+  apis: ["./src/routes/*.ts", "./src/routes/v1/*.ts"]
 };
 
 const spec = swaggerJsdoc(options);
@@ -33,5 +32,5 @@ export const setupSwagger = (app: Express): void => {
     res.setHeader("Content-Type", "application/json");
     res.send(spec);
   });
-  console.log("📚 Swagger docs available at http://localhost:3000/api-docs");
+  console.log("Swagger docs available at http://localhost:3000/api-docs");
 };

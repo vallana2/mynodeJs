@@ -37,7 +37,7 @@ export const getListingReviews = async (req: AuthRequest, res: Response) => {
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) }
     };
 
-    setCache(cacheKey, result, 30); // cache for 30 seconds
+    setCache(cacheKey, result, 30);
     res.status(200).json(result);
   } catch (error) {
     console.log(error);
@@ -73,8 +73,8 @@ export const createReview = async (req: AuthRequest, res: Response) => {
       }
     });
 
-    // Clear reviews cache for this listing when new review is posted
     clearCacheByPrefix(`reviews:${listingId}`);
+    clearCacheByPrefix(`ai:review-summary:${listingId}`);
 
     res.status(201).json(review);
   } catch (error) {
@@ -92,8 +92,8 @@ export const deleteReview = async (req: AuthRequest, res: Response) => {
 
     await prisma.review.delete({ where: { id } });
 
-    // Clear reviews cache for this listing
     clearCacheByPrefix(`reviews:${review.listingId}`);
+    clearCacheByPrefix(`ai:review-summary:${review.listingId}`);
 
     res.status(200).json({ message: "Review deleted successfully" });
   } catch (error) {
@@ -101,6 +101,3 @@ export const deleteReview = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: "Something went wrong" });
   }
 };
-
-
-
