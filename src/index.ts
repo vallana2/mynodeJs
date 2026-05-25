@@ -2,6 +2,7 @@ import "dotenv/config";
 import express, { Request, Response, NextFunction } from "express";
 import compression from "compression";
 import morgan from "morgan";
+import cors from "cors";
 import { setupSwagger } from "./config/swagger";
 import { connectDB } from "./config/prisma";
 import { generalLimiter, strictLimiter } from "./middlewares/rateLimiter";
@@ -11,7 +12,14 @@ import uploadRoutes from "./routes/upload.routes";
 
 const app = express();
 
-app.set("trust proxy", 1); // required for rate limiter behind Render/proxy
+// CORS — must be first
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+app.set("trust proxy", 1);
 
 app.use(process.env["NODE_ENV"] === "production" ? morgan("combined") : morgan("dev"));
 app.use(compression());
