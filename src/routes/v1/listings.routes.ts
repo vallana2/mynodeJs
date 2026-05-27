@@ -6,7 +6,8 @@ import {
   getListingById,
   createListing,
   updateListing,
-  deleteListing
+  deleteListing,
+  addPhotoUrl
 } from "../../controllers/listings.controller";
 import { getListingStats } from "../../controllers/stats.controller";
 
@@ -148,6 +149,39 @@ router.get("/:id", getListingById);
  *         description: Hosts only
  */
 router.post("/", authenticate, requireHost, createListing);
+
+/**
+ * @swagger
+ * /listings/{id}/photos/url:
+ *   post:
+ *     summary: Add photo URL to listing
+ *     tags: [Listings]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               url:
+ *                 type: string
+ *                 example: https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800
+ *               publicId:
+ *                 type: string
+ *                 example: external
+ *     responses:
+ *       201:
+ *         description: Photo added
+ */
+router.post("/:id/photos/url", authenticate, requireHost, addPhotoUrl);
 
 /**
  * @swagger

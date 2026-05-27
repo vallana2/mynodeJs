@@ -138,6 +138,30 @@ export const deleteListing = async (req: AuthRequest, res: Response) => {
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" });
   }
+  export const addPhotoUrl = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { url, publicId } = req.body;
+
+    if (!url) return res.status(400).json({ message: "URL is required" });
+
+    const listing = await prisma.listing.findUnique({ where: { id } });
+    if (!listing) return res.status(404).json({ message: "Listing not found" });
+
+    const photo = await prisma.listingPhoto.create({
+      data: {
+        url,
+        publicId: publicId || 'external',
+        listingId: id
+      }
+    });
+
+    res.status(201).json(photo);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Something went wrong" });
+  }
+};
 };
 
 
