@@ -48,11 +48,31 @@ export const searchListings = async (req: AuthRequest, res: Response) => {
     else if (maxPrice) where.pricePerNight = { lte: Number(maxPrice) };
     if (guests) where.guests = { gte: Number(guests) };
     const [listings, total] = await Promise.all([
-      prisma.listing.findMany({ where, include: { host: { select: { id: true, name: true, email: true } }, photos: true }, skip, take: limitNum, orderBy: { createdAt: "desc" } }),
+      prisma.listing.findMany({
+        where,
+        include: {
+          host: { select: { id: true, name: true, email: true } },
+          photos: true
+        },
+        skip,
+        take: limitNum,
+        orderBy: { createdAt: "desc" }
+      }),
       prisma.listing.count({ where })
     ]);
-    res.status(200).json({ data: listings, meta: { total, page: pageNum, limit: limitNum, totalPages: Math.ceil(total / limitNum) } });
-  } catch (error) { console.log(error); res.status(500).json({ message: "Something went wrong" }); }
+    res.status(200).json({
+      data: listings,
+      meta: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum)
+      }
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Something went wrong" });
+  }
 };
 
 export const getListingById = async (req: AuthRequest, res: Response) => {
@@ -72,7 +92,6 @@ export const getListingById = async (req: AuthRequest, res: Response) => {
 export const createListing = async (req: AuthRequest, res: Response) => {
   try {
     const hostId = req.userId!;
-
     const { title, description, location, pricePerNight, guests, type, amenities } = req.body;
 
     if (!title || !description || !location || !pricePerNight || !guests || !type) {
@@ -81,7 +100,7 @@ export const createListing = async (req: AuthRequest, res: Response) => {
 
     const validTypes: ListingType[] = ["APARTMENT", "HOUSE", "VILLA", "CABIN"];
     if (!validTypes.includes(type)) {
-      return res.status(400).json({ message: "Invalid listing type. Must be APARTMENT, HOUSE, VILLA, or CABIN" });
+      return res.status(400).json({ message: "Invalid listing type" });
     }
 
     const listing = await prisma.listing.create({
@@ -138,10 +157,12 @@ export const deleteListing = async (req: AuthRequest, res: Response) => {
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" });
   }
-  export const addPhotoUrl = async (req: Request, res: Response) => {
+};
+
+export const addPhotoUrl = async (req: AuthRequest, res: Response) => {
   try {
-    const { id } = req.params;
-    const { url, publicId } = req.body;
+    const id = req.params.id as string;
+    const { url, publicId } = req.body as { url: string; publicId?: string };
 
     if (!url) return res.status(400).json({ message: "URL is required" });
 
@@ -162,6 +183,3 @@ export const deleteListing = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: "Something went wrong" });
   }
 };
-};
-
-
